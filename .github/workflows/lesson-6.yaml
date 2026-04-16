@@ -31,11 +31,23 @@ jobs:
   security_test:
     needs: [deploy]
     runs-on: ubuntu-latest
+    # 1. Give ZAP the needed permissions
+    permissions:
+      contents: read
+      issues: write  # This allows ZAP to create the report issue
     steps:
+      # 2. You must checkout the repo so a workspace directory exists
+      - name: Checkout
+        uses: actions/checkout@v4
+      # 3. You must open up permissions so the Docker container can write to that directory
+      - name: chmod
+        run: sudo chmod -R 777 .
+      # 4. Finally add the security scan
       - name: Dynamic Application Security Scan
-        uses: zaproxy/action-baseline@v0.7.0
+        uses: zaproxy/action-baseline@v0.15.0
         with:
           target: 'https://hangryhippo.quantic.host'
+          token: ${{ secrets.GITHUB_TOKEN }}
   acceptance_test:
     needs: [deploy]
     runs-on: ubuntu-latest
