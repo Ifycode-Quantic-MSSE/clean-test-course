@@ -33,11 +33,23 @@ jobs:
   security_test:
     needs: [deploy]
     runs-on: ubuntu-latest
+    # 1. Give ZAP the needed permissions
+    permissions:
+      contents: read
+      issues: write  # This allows ZAP to create the report issue
     steps:
+      # 1. You must checkout the repo so a workspace directory exists
+      - name: Checkout
+        uses: actions/checkout@v4
+      # 2. You must open up permissions so the Docker container can write to that directory
+      - name: chmod
+        run: sudo chmod -R 777 .
+      # 3. Finally add the security scan
       - name: Dynamic Application Security Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://hangry-web-dev.us-east-1.elasticbeanstalk.com/'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
 
 
